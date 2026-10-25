@@ -466,7 +466,7 @@
 	phy-connection-type = "usxgmii";
 	managed = "in-band-status";
 	phy = <&phy7>;
-	openwrt,netdev-name = "wan";
+	openwrt,netdev-name = "wan10g";
 	nvmem-cells = <&macaddr_factory_4 (-1)>;
 	nvmem-cell-names = "mac-address";
 	status = "okay";
