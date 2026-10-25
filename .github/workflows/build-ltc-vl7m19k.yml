@@ -157,6 +157,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.DEVICE }}-${{ steps.version.outputs.date }}-${{ steps.version.outputs.repo_commit }}
+          target_commitish: ${{ github.sha }}
           name: ${{ steps.version.outputs.date }} - LTC Velo7 Max Build (${{ steps.version.outputs.repo_commit }})
           body: ${{ inputs.release_notes }}
           prerelease: ${{ env.RELEASE_TYPE == 'prerelease' }}
