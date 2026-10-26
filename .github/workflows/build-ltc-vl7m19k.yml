@@ -171,3 +171,20 @@ jobs:
             ${{ env.TARGET_DIR }}/sha256sums
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Keep only the newest firmware releases; older ones are deleted
+      # together with their tags. Change KEEP to keep more or fewer.
+      - name: Delete old releases
+        if: success() && env.RELEASE_TYPE != 'none'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          KEEP: 5
+        run: |
+          gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
+            --jq '.[]|select(.tag_name|startswith("ltc_vl7m19k-"))|[.created_at,.id,.tag_name]|@tsv' |
+            sort -r | tail -n +$((KEEP + 1)) |
+            while IFS=$'\t' read -r created id tag; do
+              echo "Deleting release $tag ($created)"
+              gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/$id"
+              gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/tags/$tag" || true
+            done
