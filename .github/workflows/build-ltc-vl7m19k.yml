@@ -178,7 +178,7 @@ jobs:
         if: success() && env.RELEASE_TYPE != 'none'
         env:
           GH_TOKEN: ${{ github.token }}
-          KEEP: 5
+          KEEP: 2
         run: |
           gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
             --jq '.[]|select(.tag_name|startswith("ltc_vl7m19k-"))|[.created_at,.id,.tag_name]|@tsv' |
