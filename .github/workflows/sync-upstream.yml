@@ -1,7 +1,8 @@
 name: Sync Upstream OpenWrt
 
 # Merges OpenWrt main into the ltc_vl7m19k firmware branch every night.
-# It only updates the source; builds are started by hand.
+# When it merged something, it starts the firmware build, which publishes
+# a new release. Nothing is deleted.
 
 on:
   schedule:
@@ -11,6 +12,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   sync-upstream:
@@ -70,6 +72,15 @@ jobs:
       - name: Push to origin
         if: steps.check.outputs.has_updates == 'true'
         run: git push origin ltc_vl7m19k
+
+      - name: Start firmware build
+        if: steps.check.outputs.has_updates == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run build-ltc-vl7m19k.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f release_type=release \
+            -f release_notes="Nightly build: LTC Velo7 Max firmware (PR #25926 fixes, 10G ports wan10g/lan10g) on OpenWrt main as of $(git log -1 --format=%cs upstream/main)."
 
       - name: Show result
         if: always()
