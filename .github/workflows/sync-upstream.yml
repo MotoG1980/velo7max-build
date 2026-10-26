@@ -1,14 +1,19 @@
 name: Sync Upstream OpenWrt
 
-# Merges OpenWrt main into the ltc_vl7m19k firmware branch every night.
+# Merges OpenWrt main into the ltc_vl7m19k firmware branch every 5 days.
 # When it merged something, it starts the firmware build, which publishes
 # a new release. Nothing is deleted.
 
 on:
   schedule:
-    # 18:00 UTC (20:00 in Romania in winter, 21:00 in summer)
+    # Checked daily at 18:00 UTC (20:00 in Romania in winter, 21:00 in
+    # summer); it only syncs when the last sync is at least SYNC_EVERY_DAYS
+    # old. Starting it by hand always syncs.
     - cron: '0 18 * * *'
   workflow_dispatch:
+
+env:
+  SYNC_EVERY_DAYS: 5
 
 permissions:
   contents: write
@@ -41,6 +46,19 @@ jobs:
       - name: Check for updates
         id: check
         run: |
+          if [ "${{ github.event_name }}" = schedule ]; then
+            last=$(git log -1 --format=%ct --committer="GitHub Actions" --grep="Merge remote-tracking branch 'upstream/main'" HEAD || true)
+            if [ -n "$last" ]; then
+              # in hours, with 2 h slack: the merge is committed a few
+              # minutes after the scheduled start
+              age_h=$(( ($(date +%s) - last) / 3600 ))
+              if [ "$age_h" -lt $(( SYNC_EVERY_DAYS * 24 - 2 )) ]; then
+                echo "Last sync was $(( age_h / 24 )) day(s) ago, next one after $SYNC_EVERY_DAYS days"
+                echo "has_updates=false" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+            fi
+          fi
           LOCAL=$(git rev-parse HEAD)
           REMOTE=$(git rev-parse upstream/main)
           if git merge-base --is-ancestor upstream/main HEAD; then
