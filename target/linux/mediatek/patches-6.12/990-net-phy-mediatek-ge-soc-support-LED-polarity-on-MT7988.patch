@@ -24,7 +24,15 @@ Signed-off-by: Yu-Cheng Chen <as95195100@gmail.com>
 ---
 --- a/drivers/net/phy/mediatek/mtk-ge-soc.c
 +++ b/drivers/net/phy/mediatek/mtk-ge-soc.c
-@@ -1282,10 +1282,45 @@ static int mt798x_phy_led_hw_control_set
+@@ -4,6 +4,7 @@
+ #include <linux/mfd/syscon.h>
+ #include <linux/module.h>
+ #include <linux/nvmem-consumer.h>
++#include <linux/of.h>
+ #include <linux/pinctrl/consumer.h>
+ #include <linux/phy.h>
+ #include <linux/regmap.h>
+@@ -1279,10 +1280,45 @@
  				       MTK_GPHY_LED_TX_BLINK_SET);
  };
  
@@ -70,7 +78,7 @@ Signed-off-by: Yu-Cheng Chen <as95195100@gmail.com>
  
  	if (led_num == 0)
  		polarities = ~(priv->boottrap);
-@@ -1298,12 +1333,42 @@ static bool mt7988_phy_led_get_polarity(
+@@ -1295,12 +1331,42 @@
  	return false;
  }
  
@@ -114,7 +122,7 @@ Signed-off-by: Yu-Cheng Chen <as95195100@gmail.com>
  	for (index = 0; index < 2; ++index)
  		phy_modify_mmd(phydev, MDIO_MMD_VEND2, index ?
  				MTK_PHY_LED1_ON_CTRL : MTK_PHY_LED0_ON_CTRL,
-@@ -1504,6 +1569,7 @@ static struct phy_driver mtk_socphy_driv
+@@ -1488,6 +1554,7 @@
  		.led_hw_is_supported = mt798x_phy_led_hw_is_supported,
  		.led_hw_control_set = mt798x_phy_led_hw_control_set,
  		.led_hw_control_get = mt798x_phy_led_hw_control_get,
