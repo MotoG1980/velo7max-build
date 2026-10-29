@@ -281,6 +281,21 @@ platform_do_upgrade() {
 		CI_UBIPART="ubi0"
 		nand_do_upgrade "$1"
 		;;
+	ltc,vl7m19k)
+		# write both volume sets of the dual-boot bootloader
+		echo "UPGRADING SECOND SLOT"
+		CI_KERNPART="kernel2"
+		CI_ROOTPART="rootfs2"
+		nand_do_flash_file "$1" || nand_do_upgrade_failed
+		echo "UPGRADING PRIMARY SLOT"
+		CI_KERNPART="kernel"
+		CI_ROOTPART="rootfs"
+		nand_do_flash_file "$1" || nand_do_upgrade_failed
+		# clear any marker the bootloader set after failing to verify
+		fw_setenv dual_boot.slot_0_invalid 0
+		fw_setenv dual_boot.slot_1_invalid 0
+		nand_do_upgrade_success
+		;;
 	netgear,eax17)
 		echo "UPGRADING SECOND SLOT"
 		CI_KERNPART="kernel2"
