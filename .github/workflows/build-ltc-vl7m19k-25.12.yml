@@ -133,6 +133,20 @@ jobs:
             tail -150 build.log || true
           fi
 
+      # Show the failure as annotations, readable from the run summary and
+      # the API without downloading the logs
+      - name: Report build errors
+        if: failure()
+        shell: bash
+        run: |
+          enc() { sed -e 's/%/%25/g' | sed -e ':a;N;$!ba;s/\n/%0A/g'; }
+          for f in build-verbose.log build.log; do
+            [ -s "$f" ] || continue
+            hits=$(grep -nE "error:|Error [0-9]|FAILED|Patch failed|failed to build|No rule to make target|Hunk #[0-9]+ FAILED|undefined reference|ERROR:" "$f" | head -40)
+            [ -n "$hits" ] && echo "::error title=$f errors::$(printf '%s\n' "$hits" | cut -c1-300 | enc)"
+            echo "::error title=$f tail::$(tail -n 60 "$f" | cut -c1-300 | enc)"
+          done
+
       - name: Check build status
         if: always()
         run: |
