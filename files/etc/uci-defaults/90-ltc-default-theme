@@ -1,0 +1,7 @@
+#!/bin/sh
+# Default the LuCI look to the classic Bootstrap theme (the vendor GUI style).
+# Runs once on a clean install; on keep-settings upgrades the user's choice stays.
+uci -q get luci.main >/dev/null || uci -q set luci.main=core
+uci -q set luci.main.mediaurlbase='/luci-static/bootstrap'
+uci -q commit luci
+exit 0
