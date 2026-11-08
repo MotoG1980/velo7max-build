@@ -63,12 +63,6 @@ void rtl839x_set_port_reg_be(u64 set, int reg)
 	sw_w32(set & 0xffffffff, reg + 4);
 }
 
-void rtl839x_mask_port_reg_le(u64 clear, u64 set, int reg)
-{
-	sw_w32_mask((u32)clear, (u32)set, reg);
-	sw_w32_mask((u32)(clear >> 32), (u32)(set >> 32), reg + 4);
-}
-
 void rtl839x_set_port_reg_le(u64 set, int reg)
 {
 	sw_w32(set, reg);
@@ -407,7 +401,7 @@ static int rtl83xx_sw_probe(struct platform_device *pdev)
 		return err;
 
 	priv->family_id = soc_info.family;
-	priv->r->stp_init();
+	priv->r->stp_init(priv);
 	priv->irq_mask = GENMASK_ULL(priv->r->cpu_port - 1, 0);
 
 	err = rtldsa_mdio_loaded();
